@@ -15,6 +15,8 @@ class Gateway implements Repository
     protected $templateId;
     //短信内容
     protected $content;
+    // 返回信息
+    protected $response;
 
     function __construct($config,$token)
     {
@@ -35,6 +37,7 @@ class Gateway implements Repository
 
     public function response($response)
     {
+        $this->response = $response;
         if ($response) {
             $result     = json_decode($response, true);
             $error_code = $result['error_code'];
@@ -87,6 +90,21 @@ class Gateway implements Repository
         $this->content = str_replace('{verifycode}', $this->code, $this->content);
         $this->content = str_replace('{minutes}', $this->config['minutes'], $this->content);
 
+    }
+
+    public function getVerifyCode($phone)
+    {
+        $state = $this->storage->retrieveState();
+        if ($state['to'] == $phone) {
+            return $state['verifycode'];
+        }
+
+        return '';
+    }
+
+    public function getReponse()
+    {
+        return $this->response;
     }
 
     public function curl($url, $params = array(), $method = 'GET', $headers = array())
